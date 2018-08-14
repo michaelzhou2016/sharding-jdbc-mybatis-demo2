@@ -1,0 +1,59 @@
+sharding:
+  jdbc:
+    datasource:
+      names: ds-0,ds-1
+      ds-0:
+        type: com.zaxxer.hikari.HikariDataSource
+        jdbc-url: jdbc:mysql://localhost:3306/ds_0
+        driver-class-name: org.mariadb.jdbc.Driver
+        username: root
+        password: think@2018
+        minimum-idle: 10
+        maximum-pool-size: 200
+        pool-name: DS0HikariCP
+        connection-timeout: 30000
+        connection-test-query: select 1
+        max-lifetime: 600000
+        idle-timeout: 120000
+        data-source-properties: {cachePrepStmts: true, prepStmtCacheSize: 250, prepStmtCacheSqlLimit: 2048, useServerPrepStmts: true}
+      ds-1:
+        type: com.zaxxer.hikari.HikariDataSource
+        jdbc-url: jdbc:mysql://localhost:3306/ds_1
+        driver-class-name: org.mariadb.jdbc.Driver
+        username: root
+        password: think@2018
+        minimum-idle: 10
+        maximum-pool-size: 200
+        pool-name: DS1HikariCP
+        connection-timeout: 30000
+        connection-test-query: select 1
+        max-lifetime: 600000
+        idle-timeout: 120000
+        data-source-properties: {cachePrepStmts: true, prepStmtCacheSize: 250, prepStmtCacheSqlLimit: 2048, useServerPrepStmts: true}
+
+    config:
+      sharding:
+        default-database-strategy:
+          standard:
+            sharding-column: user_id
+            precise-algorithm-class-name: com.vcredit.sharding.algorithm.DatabaseShardingAlgorithm
+        tables:
+          t_order:
+            actual-data-nodes: ds-$->{0..1}.t_order_$->{0..1}
+            table-strategy:
+              standard:
+                sharding-column: order_id
+                precise-algorithm-class-name: com.vcredit.sharding.algorithm.TablePreciseShardingAlgorithm
+                range-algorithm-class-name: com.vcredit.sharding.algorithm.TableRangeShardingAlgorithm
+            key-generator-column-name: order_id
+          t_order_item:
+            actual-data-nodes: ds-$->{0..1}.t_order_item_$->{0..1}
+            table-strategy:
+              standard:
+                sharding-column: order_id
+                precise-algorithm-class-name: com.vcredit.sharding.algorithm.TablePreciseShardingAlgorithm
+                range-algorithm-class-name: com.vcredit.sharding.algorithm.TableRangeShardingAlgorithm
+            key-generator-column-name: order_item_id
+        props:
+          sql:
+            show: true
